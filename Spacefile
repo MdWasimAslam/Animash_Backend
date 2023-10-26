@@ -1,0 +1,9 @@
+# Spacefile Docs: https://go.deta.dev/docs/spacefile/v0
+v: 0
+micros:
+  - name: Backend
+    src: ./
+    engine: nodejs16
+    primary: true
+    dev: nodemon index.js # start the micro in development mode
+
