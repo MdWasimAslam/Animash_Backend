@@ -53,14 +53,15 @@ app.post("/addNewAnime", async (req, res) => {
     console.log("Image uploaded to ImgBB:", imageUrl);
     const payload = {
       imageUrl:imageUrl,
-      name:"Lufy",
+      name:req.body.name,
       score:"0",
-      serial:"1"
-    };
+      serial:req.body.serial,
+      desc:req.body.desc,
+       };
     const response = await db.put(payload);
 
     // Respond with success
-    res.status(200).json({ message: 'Image uploaded successfully' });
+    res.status(200).json({ message: 'Data Added Successfully' });
 
   } catch (error) {
     console.error('Error uploading the image:', error);
@@ -73,8 +74,10 @@ app.post("/addNewAnime", async (req, res) => {
 
 // Get Anime API
 app.post("/getAnime", async (req, res) => {
+  const serial = req.body.serial;
+  console.log(serial);
   try {
-    const response = await db.fetch({serial:"1"});
+    const response = await db.fetch({serial:serial.toString()});
     console.log(response);
     res.status(200).json({ message: 'Data fetched successfully', data: response });
   } catch (error) {
@@ -83,16 +86,55 @@ app.post("/getAnime", async (req, res) => {
   }
 });
 
-app.get("/test", async (req, res) => {
+// Add New Score API
+app.post("/addNewScore", async (req, res) => {
   try {
+    const key = req.body.key;
+    const serial = req.body.serial;
 
-    res.status(200).json({ message: 'Data updated successfully', data: "response" });
+    // Fetch the current score
+    const getScore = await db.fetch({ serial: serial.toString() });
+    const currentScore = getScore?.items[0]?.score;
+
+    if (currentScore !== undefined) {
+      // Calculate the new score
+      const newScore = parseInt(currentScore) + 1;
+
+      // Update the score in the database
+      const response = await db.update({ score: newScore.toString() },key);
+      console.log(response);
+
+      res.status(200).json({ message: 'Score Updated Successfully' });
+    } else {
+      res.status(404).json({ error: 'Score not found' });
+    }
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error updating score:", error);
+    res.status(500).json({ error: 'An error occurred while updating the score' });
+  }
+});
+
+
+
+
+
+// Get Top 5 Score Anime
+// Get Top 5 Score Anime
+app.get("/getAllData", async (req, res) => {
+  try {
+    // Fetch data and convert scores to numbers, then sort and limit to the top 5 results
+    const response = await db.fetch({}); // Fetch all the data
+    console.log(response);
+    res.status(200).json({ message: 'Top 5 anime fetched successfully', data: response });
+  } catch (error) {
+    console.error("Error fetching top 5 anime:", error);
     res.status(500).json({ error: 'An error occurred while fetching data' });
   }
-}
-);
+});
+
+
+
+
 
 
 
